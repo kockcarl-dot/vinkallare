@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Min Vinkällare</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap');
+
+  :root {
+    --wine: #6B1C2E;
+    --wine-light: #8B2942;
+    --wine-dark: #3D0F1A;
+    --gold: #C9A84C;
+    --gold-light: #E2C97E;
+    --cream: #F5EFE0;
+    --cream-dark: #EDE3CE;
+    --text: #1A0A0F;
+    --text-muted: #6B5055;
+    --bg: #FAF6EE;
+    --card: #FFFFFF;
+    --border: rgba(107,28,46,0.12);
+    --shadow: 0 2px 20px rgba(107,28,46,0.08);
+    --shadow-lg: 0 8px 40px rgba(107,28,46,0.14);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Jost', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    font-weight: 300;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--wine-dark);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+  }
+
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 300;
+    color: var(--gold-light);
+    letter-spacing: 0.08em;
+  }
+  .logo span { color: rgba(255,255,255,0.4); font-style: italic; font-size: 1rem; margin-left: 0.5rem; }
+
+  .header-stats {
+    display: flex;
+    gap: 2rem;
+  }
+  .stat {
+    text-align: center;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .stat strong {
+    display: block;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    color: var(--gold-light);
+    font-weight: 300;
+    letter-spacing: 0;
+  }
+
+  /* ── LAYOUT ── */
+  .app { display: flex; min-height: calc(100vh - 64px); }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 220px;
+    background: var(--wine-dark);
+    padding: 2rem 0;
+    flex-shrink: 0;
+    border-right: 1px solid rgba(201,168,76,0.1);
+  }
+
+  .nav-section {
+    padding: 0 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .nav-section-label {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: rgba(255,255,255,0.3);
+    padding: 0 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    font-family: 'Jost', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.15s;
+    text-align: left;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.06); color: white; }
+  .nav-btn.active { background: rgba(201,168,76,0.15); color: var(--gold-light); }
+  .nav-btn .icon { font-size: 1rem; width: 18px; text-align: center; }
+
+  /* ── MAIN ── */
+  .main {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--wine);
+    margin-bottom: 0.25rem;
+    letter-spacing: 0.03em;
+  }
+  .page-subtitle {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    margin-bottom: 2rem;
+    font-weight: 300;
+  }
+
+  /* ── SEARCH & FILTER BAR ── */
+  .toolbar {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+  }
+  .search-wrap .search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+  input[type="search"], input[type="text"], input[type="number"], input[type="date"], select, textarea {
+    font-family: 'Jost', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 300;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: white;
+    color: var(--text);
+    padding: 0.55rem 0.85rem;
+    outline: none;
+    transition: border 0.15s;
+  }
+  input[type="search"] { padding-left: 2.2rem; width: 100%; }
+  input:focus, select:focus, textarea:focus { border-color: var(--wine); }
+
+  select { cursor: pointer; }
+
+  .filter-select {
+    padding: 0.55rem 0.85rem;
+    min-width: 130px;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    font-family: 'Jost', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.55rem 1.2rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .btn-primary { background: var(--wine); color: white; }
+  .btn-primary:hover { background: var(--wine-light); }
+  .btn-secondary { background: transparent; border: 1px solid var(--wine); color: var(--wine); }
+  .btn-secondary:hover { background: var(--wine); color: white; }
+  .btn-gold { background: var(--gold); color: white; }
+  .btn-gold:hover { background: var(--gold-light); }
+  .btn-danger { background: transparent; border: 1px solid #c0392b; color: #c0392b; }
+  .btn-danger:hover { background: #c0392b; color: white; }
+  .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.7rem; }
+  .btn-icon { padding: 0.4rem 0.6rem; }
+
+  /* ── WINE GRID ── */
+  .wine-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  .wine-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .wine-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+
+  .wine-card-header {
+    height: 8px;
+  }
+  .color-rod { background: #8B2942; }
+  .color-white { background: #D4AF37; }
+  .color-bubbly { background: #E8D5B7; }
+  .color-rose { background: #E8A0A0; }
+  .color-dessert { background: #C4A000; }
+  .color-fortified { background: #6B4423; }
+
+  .wine-card-body { padding: 1rem 1.1rem 0.8rem; }
+
+  .wine-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 0.15rem;
+    line-height: 1.3;
+  }
+  .wine-producer {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 0.6rem;
+    font-style: italic;
+  }
+
+  .wine-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-bottom: 0.7rem;
+  }
+  .tag {
+    background: var(--cream);
+    color: var(--wine);
+    font-size: 0.65rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+    font-weight: 400;
+  }
+  .tag-region { background: rgba(107,28,46,0.08); }
+  .tag-vintage { background: rgba(201,168,76,0.15); color: #7A5800; }
+
+  .wine-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .drink-window {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 400;
+  }
+  .drink-now { background: #e8f5e9; color: #2e7d32; }
+  .drink-soon { background: #fff8e1; color: #f57f17; }
+  .drink-hold { background: #e8eaf6; color: #283593; }
+  .drink-past { background: #fce4ec; color: #880e4f; }
+
+  .wine-card-footer {
+    display: flex;
+    gap: 0.4rem;
+    padding: 0.6rem 1.1rem;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+  }
+
+  .bottles-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,10,15,0.6);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(26,10,15,0.3);
+  }
+
+  .modal-header {
+    padding: 1.5rem 1.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--wine);
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+  }
+  .modal-close:hover { background: var(--cream); }
+
+  .modal-body { padding: 1.5rem 1.75rem; }
+  .modal-footer {
+    padding: 1rem 1.75rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+  }
+
+  /* ── FORM ── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .form-group.full { grid-column: 1 / -1; }
+  label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+  input[type="text"], input[type="number"], input[type="date"], select, textarea {
+    width: 100%;
+  }
+  textarea { resize: vertical; min-height: 70px; }
+
+  .rating-input { display: flex; gap: 0.3rem; align-items: center; }
+  .star-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #ddd;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.1s;
+  }
+  .star-btn.active { color: var(--gold); }
+
+  /* ── FOOD PAIRING PAGE ── */
+  .pairing-hero {
+    background: linear-gradient(135deg, var(--wine-dark) 0%, var(--wine) 100%);
+    border-radius: 16px;
+    padding: 2.5rem;
+    color: white;
+    margin-bottom: 2rem;
+  }
+  .pairing-hero h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+    color: var(--gold-light);
+  }
+  .pairing-hero p {
+    color: rgba(255,255,255,0.7);
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+  }
+  .pairing-input-row {
+    display: flex;
+    gap: 0.75rem;
+  }
+  .pairing-input-row input {
+    flex: 1;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
+  }
+  .pairing-input-row input::placeholder { color: rgba(255,255,255,0.4); }
+  .pairing-input-row input:focus { border-color: var(--gold-light); outline: none; background: rgba(255,255,255,0.15); }
+
+  .pairing-results { }
+  .pairing-result-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    color: var(--wine);
+    margin-bottom: 1rem;
+  }
+
+  .pairing-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    gap: 1.2rem;
+    align-items: flex-start;
+  }
+  .pairing-rank {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--gold);
+    line-height: 1;
+    min-width: 2rem;
+    text-align: center;
+  }
+  .pairing-info { flex: 1; }
+  .pairing-wine-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15rem;
+    color: var(--text);
+    margin-bottom: 0.2rem;
+  }
+  .pairing-reason {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .pairing-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+  }
+  .score-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--wine);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+  }
+  .score-label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  /* ── IMPORT ── */
+  .import-area {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 3rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+  }
+  .import-area:hover { border-color: var(--wine); background: var(--cream); }
+  .import-area h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    color: var(--wine);
+    margin-bottom: 0.5rem;
+    font-weight: 400;
+  }
+  .import-area p { color: var(--text-muted); font-size: 0.82rem; }
+  .import-area .big-icon { font-size: 3rem; margin-bottom: 1rem; }
+
+  .import-template {
+    background: var(--cream);
+    border-radius: 10px;
+    padding: 1.2rem 1.5rem;
+    margin-top: 1.5rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  .import-template strong { color: var(--text); display: block; margin-bottom: 0.4rem; }
+  .col-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.4rem; }
+  .col-pill {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.15rem 0.5rem;
+    font-size: 0.7rem;
+    color: var(--wine);
+  }
+
+  /* ── WINE DETAIL MODAL ── */
+  .detail-top {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .detail-color-bar {
+    width: 6px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .detail-main { flex: 1; }
+  .detail-wine-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 0.15rem;
+  }
+  .detail-producer {
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 0.8rem;
+    font-size: 0.9rem;
+  }
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    margin-bottom: 1.2rem;
+  }
+  .detail-item label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); display: block; margin-bottom: 0.1rem; }
+  .detail-item span { font-size: 0.88rem; color: var(--text); }
+  .detail-notes {
+    background: var(--cream);
+    border-radius: 8px;
+    padding: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-style: italic;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+  .detail-food {
+    margin-bottom: 1rem;
+  }
+  .detail-food h4 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 0.5rem; }
+  .food-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .food-tag {
+    background: var(--cream);
+    border: 1px solid rgba(107,28,46,0.15);
+    color: var(--wine);
+    padding: 0.25rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-muted);
+  }
+  .empty-state .empty-icon { font-size: 3.5rem; margin-bottom: 1rem; opacity: 0.4; }
+  .empty-state h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 400; color: var(--text); margin-bottom: 0.5rem; }
+  .empty-state p { font-size: 0.85rem; }
+
+  /* ── LOADING ── */
+  .loading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.85rem;
+  }
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-top-color: var(--wine);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--wine-dark);
+    color: white;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    z-index: 999;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s;
+    border-left: 3px solid var(--gold);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .sidebar { display: none; position: fixed; top: 64px; left: 0; bottom: 0; z-index: 150; width: 240px; overflow-y: auto; }
+    .sidebar.open { display: flex; flex-direction: column; }
+    .form-grid { grid-template-columns: 1fr; }
+    .header-stats { display: none; }
+    .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 140; }
+    .mobile-overlay.open { display: block; }
+    .main { padding: 1rem; }
+    .wine-grid { grid-template-columns: 1fr; }
+    .toolbar { gap: 0.5rem; }
+    .filter-select { min-width: 100px; font-size: 0.75rem; }
+  }
+  @media (min-width: 769px) {
+    .hamburger { display: none; }
+  }
+  .hamburger {
+    background: none;
+    border: none;
+    color: var(--gold-light);
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 0.4rem 0.6rem;
+    line-height: 1;
+  }
+
+  .divider { height: 1px; background: var(--border); margin: 1.2rem 0; }
+
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.65rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+  }
+  .badge-red { background: rgba(107,28,46,0.1); color: var(--wine); }
+  .badge-white { background: rgba(201,168,76,0.15); color: #7A5800; }
+  .badge-rose { background: rgba(232,160,160,0.2); color: #8B3A3A; }
+  .badge-bubbly { background: rgba(232,213,183,0.3); color: #6B5000; }
+
+  .api-key-banner {
+    background: #fff8e1;
+    border: 1px solid #f9a825;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.82rem;
+    color: #5d4037;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .api-key-banner input {
+    flex: 1;
+    border: 1px solid #f9a825;
+    border-radius: 6px;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.8rem;
+    background: white;
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+  <div class="logo">Vinkällaren <span>min samling</span></div>
+  <div style="font-size:0.75rem;color:rgba(255,255,255,0.5)" id="sync-indicator">⟳ Ansluter…</div>
+  <div class="header-stats">
+    <div class="stat"><strong id="stat-total">0</strong>Flaskor</div>
+    <div class="stat"><strong id="stat-red">0</strong>Rött</div>
+    <div class="stat"><strong id="stat-white">0</strong>Vitt</div>
+    <div class="stat"><strong id="stat-drink-now">0</strong>Drick nu</div>
+  </div>
+</header>
+
+<div class="mobile-overlay" id="mobile-overlay" onclick="toggleSidebar()"></div>
+<div class="app">
+  <nav class="sidebar">
+    <div class="nav-section">
+      <div class="nav-section-label">Källare</div>
+      <button class="nav-btn active" onclick="showPage('cellar')" id="nav-cellar">
+        <span class="icon">🍷</span> Min källare
+      </button>
+      <button class="nav-btn" onclick="showPage('pairing')" id="nav-pairing">
+        <span class="icon">🍽</span> Matmatchning
+      </button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Hantera</div>
+      <button class="nav-btn" onclick="showPage('add')" id="nav-add">
+        <span class="icon">＋</span> Lägg till vin
+      </button>
+      <button class="nav-btn" onclick="showPage('import')" id="nav-import">
+        <span class="icon">📥</span> Importera Excel
+      </button>
+      <div class="nav-section-label" style="margin-top:1rem">Synk</div>
+      <button class="nav-btn" onclick="exportJSON()">
+        <span class="icon">⬆</span> Exportera källare
+      </button>
+      <button class="nav-btn" onclick="document.getElementById('json-import-input').click()">
+        <span class="icon">⬇</span> Importera källare
+      </button>
+      <input type="file" id="json-import-input" accept=".json" style="display:none" onchange="importJSON(event)">
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- ── KÄLLARSIDAN ── -->
+    <div class="page active" id="page-cellar">
+      <div class="page-title">Min källare</div>
+      <div class="page-subtitle">Bläddra, sök och filtrera din samling</div>
+
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="search" id="search-input" placeholder="Sök på namn, producent, druva, region…" oninput="filterWines()">
+        </div>
+        <select class="filter-select" id="filter-color" onchange="filterWines()">
+          <option value="">Alla färger</option>
+          <option value="Rött">Rött</option>
+          <option value="Vitt">Vitt</option>
+          <option value="Rosé">Rosé</option>
+          <option value="Mousserande">Mousserande</option>
+          <option value="Dessertvin">Dessertvin</option>
+          <option value="Starkvin">Starkvin</option>
+        </select>
+        <select class="filter-select" id="filter-drink" onchange="filterWines()">
+          <option value="">Alla perioder</option>
+          <option value="now">Drick nu</option>
+          <option value="soon">Drick snart</option>
+          <option value="hold">Lagra</option>
+          <option value="past">Passerat peak</option>
+        </select>
+        <select class="filter-select" id="filter-region" onchange="filterWines()">
+          <option value="">Alla regioner</option>
+        </select>
+        <select class="filter-select" id="filter-grape" onchange="filterWines()">
+          <option value="">Alla druvor</option>
+        </select>
+        <select class="filter-select" id="sort-select" onchange="filterWines()">
+          <option value="">Sortera: Standard</option>
+          <option value="name">Namn A–Ö</option>
+          <option value="name_desc">Namn Ö–A</option>
+          <option value="vintage">Årgång (äldst först)</option>
+          <option value="vintage_desc">Årgång (nyast först)</option>
+          <option value="producer">Producent A–Ö</option>
+          <option value="region">Region A–Ö</option>
+          <option value="drink_from">Drick från (tidigast)</option>
+          <option value="drink_to">Drick senast (snabbast)</option>
+          <option value="color">Vintyp</option>
+          <option value="country">Land A–Ö</option>
+          <option value="price">Pris (lägst)</option>
+          <option value="price_desc">Pris (högst)</option>
+          <option value="rating_desc">Betyg (högst)</option>
+        </select>
+        <button class="btn btn-primary" onclick="showPage('add')">＋ Lägg till</button>
+      </div>
+
+      <div id="wine-grid" class="wine-grid"></div>
+    </div>
+
+    <!-- ── MATMATCHNING ── -->
+    <div class="page" id="page-pairing">
+      <div class="page-title">Matmatchning</div>
+      <div class="page-subtitle">Beskriv din rätt – AI rekommenderar ur din källare</div>
+
+      <div class="api-key-banner" id="api-key-banner">
+        🔑 <span>Klistra in din Claude API-nyckel för att aktivera AI-matchning och automatiska drickfönster:</span>
+        <input type="password" id="api-key-input" placeholder="sk-ant-…" oninput="saveApiKey()">
+        <button class="btn btn-sm btn-secondary" onclick="testApiKey()">Testa</button>
+      </div>
+
+      <div class="pairing-hero">
+        <h2>Vad äter du ikväll?</h2>
+        <p>Beskriv rätten så finner jag det bästa vinet från din källare</p>
+        <div class="pairing-input-row">
+          <input type="text" id="food-input" placeholder="t.ex. grillad lammrostbiff med rosmarin och vitlök…" onkeydown="if(event.key==='Enter') getPairing()">
+          <button class="btn btn-gold" onclick="getPairing()">Matcha vin ✦</button>
+        </div>
+      </div>
+
+      <div id="pairing-results"></div>
+    </div>
+
+    <!-- ── LÄGG TILL VIN ── -->
+    <div class="page" id="page-add">
+      <div class="page-title">Lägg till vin</div>
+      <div class="page-subtitle">Registrera en ny flaska i din källare</div>
+
+      <div style="background:white; border-radius:16px; border:1px solid var(--border); padding:2rem; max-width:640px;">
+        
+        <!-- Etikett-scanning -->
+        <div style="margin-bottom:1.5rem; padding:1.2rem; background:var(--cream); border-radius:12px; border:1px solid var(--border);">
+          <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:0.75rem;">📷 Scanna etikett med AI</div>
+          <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+            <button class="btn btn-primary" type="button" onclick="document.getElementById('camera-input').click()">📷 Ta foto</button>
+            <button class="btn btn-secondary" type="button" onclick="document.getElementById('gallery-input').click()">🖼 Välj från galleri</button>
+          </div>
+          <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none" onchange="scanLabel(event)">
+          <input type="file" id="gallery-input" accept="image/*" style="display:none" onchange="scanLabel(event)">
+          <div id="scan-status" style="margin-top:0.75rem;font-size:0.82rem;color:var(--text-muted);display:none;"></div>
+          <div id="scan-preview" style="margin-top:0.75rem;display:none;">
+            <img id="scan-img" style="max-width:120px;max-height:120px;border-radius:8px;object-fit:cover;" />
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Vinets namn *</label>
+            <input type="text" id="f-name" placeholder="t.ex. Château Margaux">
+          </div>
+          <div class="form-group">
+            <label>Producent</label>
+            <input type="text" id="f-producer" placeholder="t.ex. Château Margaux">
+          </div>
+          <div class="form-group">
+            <label>Årgång</label>
+            <input type="number" id="f-vintage" placeholder="2018" min="1900" max="2030">
+          </div>
+          <div class="form-group">
+            <label>Vintyp *</label>
+            <select id="f-color">
+              <option value="Rött">Rött</option>
+              <option value="Vitt">Vitt</option>
+              <option value="Rosé">Rosé</option>
+              <option value="Mousserande">Mousserande</option>
+              <option value="Dessertvin">Dessertvin</option>
+              <option value="Starkvin">Starkvin</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Region</label>
+            <input type="text" id="f-region" placeholder="t.ex. Bordeaux">
+          </div>
+          <div class="form-group">
+            <label>Land</label>
+            <input type="text" id="f-country" placeholder="t.ex. Frankrike">
+          </div>
+          <div class="form-group">
+            <label>Druva/Druvor</label>
+            <input type="text" id="f-grape" placeholder="t.ex. Cabernet Sauvignon, Merlot">
+          </div>
+          <div class="form-group">
+            <label>Antal flaskor</label>
+            <input type="number" id="f-bottles" value="1" min="1" max="999">
+          </div>
+          <div class="form-group">
+            <label>Drick från</label>
+            <input type="number" id="f-drink-from" placeholder="2024" min="2000" max="2060">
+          </div>
+          <div class="form-group">
+            <label>Drick senast</label>
+            <input type="number" id="f-drink-to" placeholder="2035" min="2000" max="2060">
+          </div>
+          <div class="form-group">
+            <label>Inköpspris (kr)</label>
+            <input type="number" id="f-price" placeholder="450" min="0">
+          </div>
+          <div class="form-group">
+            <label>Betyg</label>
+            <div class="rating-input" id="rating-stars">
+              <button class="star-btn" onclick="setRating(1)">★</button>
+              <button class="star-btn" onclick="setRating(2)">★</button>
+              <button class="star-btn" onclick="setRating(3)">★</button>
+              <button class="star-btn" onclick="setRating(4)">★</button>
+              <button class="star-btn" onclick="setRating(5)">★</button>
+            </div>
+          </div>
+          <div class="form-group full">
+            <label>Matmatchning (kommaseparerat)</label>
+            <input type="text" id="f-food" placeholder="t.ex. lamm, vilt, hårdost, svamp">
+          </div>
+          <div class="form-group full">
+            <label>Anteckningar</label>
+            <textarea id="f-notes" placeholder="Smakbeskrivning, inköpsplats, anledning…"></textarea>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div style="display:flex; gap:0.75rem;">
+          <button class="btn btn-primary" onclick="addWine()">Spara vin</button>
+          <button class="btn btn-secondary" onclick="clearForm()">Rensa</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── IMPORTERA ── -->
+    <div class="page" id="page-import">
+      <div class="page-title">Importera Excel</div>
+      <div class="page-subtitle">Ladda upp din befintliga lista för att komma igång snabbt</div>
+
+      <div class="import-area" onclick="document.getElementById('file-input').click()">
+        <div class="big-icon">📥</div>
+        <h3>Klicka eller dra hit din fil</h3>
+        <p>Stöder .xlsx, .xls och .csv</p>
+        <input type="file" id="file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="importFile(event)">
+      </div>
+
+      <div class="import-template">
+        <strong>Kolumner som känns igen (valfria, men rekommenderade):</strong>
+        <div class="col-list">
+          <span class="col-pill">namn</span>
+          <span class="col-pill">producent</span>
+          <span class="col-pill">årgång</span>
+          <span class="col-pill">vintyp</span>
+          <span class="col-pill">region</span>
+          <span class="col-pill">land</span>
+          <span class="col-pill">druva</span>
+          <span class="col-pill">flaskor</span>
+          <span class="col-pill">drick_från</span>
+          <span class="col-pill">drick_till</span>
+          <span class="col-pill">pris</span>
+          <span class="col-pill">mat</span>
+          <span class="col-pill">anteckningar</span>
+        </div>
+        <div style="margin-top:0.75rem; padding-top:0.75rem; border-top: 1px solid var(--border);">
+          <button class="btn btn-sm btn-secondary" onclick="downloadTemplate()">⬇ Ladda ner mall</button>
+        </div>
+      </div>
+
+      <div id="import-status" style="margin-top:1rem;"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── WINE DETAIL MODAL ── -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Vindetaljer</div>
+      <button class="modal-close" onclick="closeModal('modal-detail')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" id="modal-delete-btn">Ta bort flaska</button>
+      <button class="btn btn-secondary btn-sm" id="modal-edit-btn">Redigera</button>
+      <button class="btn btn-gold btn-sm" id="modal-ai-btn" onclick="enrichSingleWine()">✦ AI-förslag drickfönster</button>
+      <button class="btn btn-primary btn-sm" onclick="closeModal('modal-detail')">Stäng</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, setDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDMqEBVuilAGaJNcnSAvVqlUPvkmXcERyQ",
+  authDomain: "vinkallare-20234.firebaseapp.com",
+  projectId: "vinkallare-20234",
+  storageBucket: "vinkallare-20234.firebasestorage.app",
+  messagingSenderId: "750304940215",
+  appId: "1:750304940215:web:a5cdac022b36a276dcbd32"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const winesCol = collection(db, 'wines');
+
+// Override saveWines to save to Firestore
+window.saveWinesToFirestore = async function(winesList) {
+  try {
+    for (const wine of winesList) {
+      await setDoc(doc(db, 'wines', wine.id), wine);
+    }
+  } catch(e) {
+    console.error('Firestore save error:', e);
+  }
+};
+
+window.deleteWineFromFirestore = async function(id) {
+  try {
+    await deleteDoc(doc(db, 'wines', id));
+  } catch(e) {
+    console.error('Firestore delete error:', e);
+  }
+};
+
+// Load wines from Firestore on start
+window.loadWinesFromFirestore = async function() {
+  try {
+    const indicator = document.getElementById('sync-indicator');
+    if (indicator) { indicator.textContent = '⟳ Synkar…'; indicator.style.color = 'var(--gold-light)'; }
+    const snapshot = await getDocs(winesCol);
+    const loaded = [];
+    snapshot.forEach(d => loaded.push(d.data()));
+    if (loaded.length > 0) {
+      window.wines = loaded;
+      localStorage.setItem('vinkallare_wines', JSON.stringify(loaded));
+      if (typeof renderWines === 'function') { renderWines(); updateStats(); updateFilterOptions(); }
+      if (indicator) { indicator.textContent = '✓ Synkad'; indicator.style.color = '#4CAF50'; }
+      console.log('Loaded', loaded.length, 'wines from Firestore');
+    } else {
+      // No wines in Firestore yet - upload from localStorage
+      const local = JSON.parse(localStorage.getItem('vinkallare_wines') || '[]');
+      if (local.length > 0) {
+        console.log('Uploading', local.length, 'local wines to Firestore...');
+        for (const wine of local) {
+          await setDoc(doc(db, 'wines', wine.id), wine);
+        }
+        if (indicator) { indicator.textContent = '✓ Uppladdad'; indicator.style.color = '#4CAF50'; }
+        console.log('Upload complete');
+      } else {
+        if (indicator) { indicator.textContent = '● Ingen data'; indicator.style.color = 'var(--gray)'; }
+      }
+    }
+  } catch(e) {
+    const indicator = document.getElementById('sync-indicator');
+    if (indicator) { indicator.textContent = '✗ Synkfel'; indicator.style.color = '#e24b4a'; }
+    console.error('Firestore load error:', e);
+  }
+};
+
+// Listen for realtime updates
+onSnapshot(winesCol, (snapshot) => {
+  const updated = [];
+  snapshot.forEach(d => updated.push(d.data()));
+  if (updated.length > 0) {
+    window.wines = updated;
+    localStorage.setItem('vinkallare_wines', JSON.stringify(updated));
+    if (typeof renderWines === 'function') { renderWines(); updateStats(); updateFilterOptions(); }
+  }
+});
+
+// Call load after DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(window.loadWinesFromFirestore, 500);
+});
+</script>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────
+let wines = JSON.parse(localStorage.getItem('vinkallare_wines') || '[]');
+let currentRating = 0;
+let editingId = null;
+let currentDetailId = null;
+
+// ─── INIT ─────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('mobile-overlay');
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('open');
+}
+
+function init() {
+  renderWines();
+  updateStats();
+  updateFilterOptions();
+  checkApiKey();
+}
+
+function checkApiKey() {
+  const key = localStorage.getItem('claude_api_key') || '';
+  if (key) {
+    document.getElementById('api-key-input').value = key;
+    document.getElementById('api-key-banner').style.display = 'none';
+  }
+}
+
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (key) localStorage.setItem('claude_api_key', key);
+}
+
+async function testApiKey() {
+  const key = localStorage.getItem('claude_api_key') || document.getElementById('api-key-input').value.trim();
+  if (!key) { showToast('Ange en API-nyckel först'); return; }
+  showToast('Testar anslutning…');
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 20, messages: [{ role: 'user', content: 'Svara bara: OK' }] })
+    });
+    const d = await r.json();
+    if (d.content) {
+      showToast('✓ API-nyckel fungerar!');
+      document.getElementById('api-key-banner').style.display = 'none';
+      localStorage.setItem('claude_api_key', key);
+    } else {
+      showToast('Ogiltig API-nyckel');
+    }
+  } catch(e) { showToast('Anslutningsfel: ' + e.message); }
+}
+
+// ─── NAVIGATION ───────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const nb = document.getElementById('nav-' + name);
+  if (nb) nb.classList.add('active');
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('mobile-overlay');
+  if (sidebar.classList.contains('open')) {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+  }
+}
+
+// ─── WINE CRUD ─────────────────────────────────────────────────
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+function addWine() {
+  const name = document.getElementById('f-name').value.trim();
+  const color = document.getElementById('f-color').value;
+  if (!name) { showToast('Ange vinets namn'); return; }
+
+  const wine = {
+    id: editingId || generateId(),
+    name,
+    producer: document.getElementById('f-producer').value.trim(),
+    vintage: parseInt(document.getElementById('f-vintage').value) || null,
+    color,
+    region: document.getElementById('f-region').value.trim(),
+    country: document.getElementById('f-country').value.trim(),
+    grape: document.getElementById('f-grape').value.trim(),
+    bottles: parseInt(document.getElementById('f-bottles').value) || 1,
+    drinkFrom: parseInt(document.getElementById('f-drink-from').value) || null,
+    drinkTo: parseInt(document.getElementById('f-drink-to').value) || null,
+    price: parseInt(document.getElementById('f-price').value) || null,
+    rating: currentRating,
+    food: document.getElementById('f-food').value.trim(),
+    notes: document.getElementById('f-notes').value.trim(),
+    addedAt: new Date().toISOString()
+  };
+
+  if (editingId) {
+    const idx = wines.findIndex(w => w.id === editingId);
+    if (idx !== -1) wines[idx] = wine;
+    editingId = null;
+    saveWines();
+    clearForm();
+    renderWines();
+    updateStats();
+    updateFilterOptions();
+    showPage('cellar');
+    showToast('✓ Vin uppdaterat');
+  } else {
+    wines.push(wine);
+    saveWines();
+    clearForm();
+    renderWines();
+    updateStats();
+    updateFilterOptions();
+    showPage('cellar');
+    showToast('✓ ' + name + ' tillagt – hämtar drickfönster…');
+    autoFetchDrinkWindow(wine.id);
+  }
+}
+
+async function autoFetchDrinkWindow(id) {
+  const apiKey = localStorage.getItem('claude_api_key') || '';
+  if (!apiKey) return;
+  const w = wines.find(w => w.id === id);
+  if (!w || w.drinkFrom) return;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 100,
+        messages: [{
+          role: 'user',
+          content: `Vin: ${[w.name, w.producer, w.vintage, w.grape, w.region, w.country].filter(Boolean).join(', ')}
+Svara ENBART med JSON: {"from": ÅRTALET, "to": ÅRTALET}`
+        }]
+      })
+    });
+    const data = await res.json();
+    if (!data.content) return;
+    const text = data.content[0].text;
+    const match = text.match(/\{[^}]+\}/);
+    if (!match) return;
+    const result = JSON.parse(match[0]);
+    const idx = wines.findIndex(w => w.id === id);
+    if (idx !== -1 && result.from && result.to) {
+      wines[idx].drinkFrom = result.from;
+      wines[idx].drinkTo = result.to;
+      wines[idx].drinkWindowAI = true;
+      saveWines();
+      renderWines();
+      updateStats();
+      showToast('✓ Drickfönster: ' + result.from + '–' + result.to);
+    }
+  } catch(e) {
+    console.error('Auto drink window error:', e);
+  }
+}
+
+function editWine(id) {
+  const w = wines.find(w => w.id === id);
+  if (!w) return;
+  editingId = id;
+  document.getElementById('f-name').value = w.name || '';
+  document.getElementById('f-producer').value = w.producer || '';
+  document.getElementById('f-vintage').value = w.vintage || '';
+  document.getElementById('f-color').value = w.color || 'Rött';
+  document.getElementById('f-region').value = w.region || '';
+  document.getElementById('f-country').value = w.country || '';
+  document.getElementById('f-grape').value = w.grape || '';
+  document.getElementById('f-bottles').value = w.bottles || 1;
+  document.getElementById('f-drink-from').value = w.drinkFrom || '';
+  document.getElementById('f-drink-to').value = w.drinkTo || '';
+  document.getElementById('f-price').value = w.price || '';
+  document.getElementById('f-food').value = w.food || '';
+  document.getElementById('f-notes').value = w.notes || '';
+  setRating(w.rating || 0);
+  closeModal('modal-detail');
+  showPage('add');
+}
+
+function deleteWine(id) {
+  const w = wines.find(w => w.id === id);
+  if (!w) return;
+  if (!confirm('Ta bort ' + w.name + '?')) return;
+  if (window.deleteWineFromFirestore) window.deleteWineFromFirestore(id);
+  wines = wines.filter(w => w.id !== id);
+  saveWines();
+  renderWines();
+  updateStats();
+  updateFilterOptions();
+  closeModal('modal-detail');
+  showToast('Vin borttaget');
+}
+
+function drinkBottle(id) {
+  const w = wines.find(w => w.id === id);
+  if (!w) return;
+  if (w.bottles <= 1) {
+    if (confirm('Sista flaskan – ta bort vinet ur källaren?')) {
+      deleteWine(id);
+    }
+  } else {
+    w.bottles--;
+    saveWines();
+    renderWines();
+    updateStats();
+    closeModal('modal-detail');
+    showToast('🍷 Skål! ' + (w.bottles) + ' fl kvar');
+  }
+}
+
+function saveWines() {
+  localStorage.setItem('vinkallare_wines', JSON.stringify(wines));
+  if (window.saveWinesToFirestore) window.saveWinesToFirestore(wines);
+}
+
+function clearForm() {
+  editingId = null;
+  ['f-name','f-producer','f-vintage','f-region','f-country','f-grape','f-food','f-notes','f-price'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('f-bottles').value = 1;
+  document.getElementById('f-drink-from').value = '';
+  document.getElementById('f-drink-to').value = '';
+  document.getElementById('f-color').value = 'Rött';
+  setRating(0);
+}
+
+// ─── RATING ───────────────────────────────────────────────────
+function setRating(n) {
+  currentRating = n;
+  document.querySelectorAll('.star-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i < n);
+  });
+}
+
+// ─── DRINK WINDOW ─────────────────────────────────────────────
+function getDrinkStatus(w) {
+  const year = new Date().getFullYear();
+  if (!w.drinkFrom && !w.drinkTo) return null;
+  if (w.drinkTo && year > w.drinkTo) return { label: 'Passerat peak', cls: 'drink-past' };
+  if (w.drinkFrom && year < w.drinkFrom) return { label: 'Lagra till ' + w.drinkFrom, cls: 'drink-hold' };
+  if (w.drinkTo && year >= (w.drinkTo - 2)) return { label: 'Drick nu', cls: 'drink-now' };
+  return { label: 'Drick ' + (w.drinkFrom || '?') + '–' + (w.drinkTo || '?'), cls: 'drink-soon' };
+}
+
+function getDrinkStatusKey(w) {
+  const year = new Date().getFullYear();
+  if (!w.drinkFrom && !w.drinkTo) return null;
+  if (w.drinkTo && year > w.drinkTo) return 'past';
+  if (w.drinkFrom && year < w.drinkFrom) return 'hold';
+  if (w.drinkTo && year >= (w.drinkTo - 2)) return 'now';
+  return 'soon';
+}
+
+// ─── COLOR CLASS ──────────────────────────────────────────────
+function colorClass(c) {
+  const map = { 'Rött': 'color-rod', 'Vitt': 'color-white', 'Rosé': 'color-rose', 'Mousserande': 'color-bubbly', 'Dessertvin': 'color-dessert', 'Starkvin': 'color-fortified' };
+  return map[c] || 'color-rod';
+}
+
+function colorHex(c) {
+  const map = { 'Rött': '#8B2942', 'Vitt': '#C9A84C', 'Rosé': '#E8A0A0', 'Mousserande': '#C8B88A', 'Dessertvin': '#C4A000', 'Starkvin': '#6B4423' };
+  return map[c] || '#8B2942';
+}
+
+// ─── RENDER WINES ─────────────────────────────────────────────
+function renderWines(list) {
+  const grid = document.getElementById('wine-grid');
+  const toShow = list !== undefined ? list : wines;
+
+  if (toShow.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-icon">🍷</div>
+      <h3>Källaren är tom</h3>
+      <p>Lägg till ditt första vin eller importera en lista</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = toShow.map(w => {
+    const ds = getDrinkStatus(w);
+    const stars = w.rating ? '★'.repeat(w.rating) + '☆'.repeat(5 - w.rating) : '';
+    return `<div class="wine-card" onclick="openDetail('${w.id}')">
+      <div class="wine-card-header ${colorClass(w.color)}"></div>
+      <div class="wine-card-body">
+        <div class="wine-name">${w.name}</div>
+        <div class="wine-producer">${[w.producer, w.vintage].filter(Boolean).join(' · ') || '&nbsp;'}</div>
+        <div class="wine-tags">
+          ${w.color ? `<span class="tag">${w.color}</span>` : ''}
+          ${w.region ? `<span class="tag tag-region">${w.region}</span>` : ''}
+          ${w.vintage ? `<span class="tag tag-vintage">${w.vintage}</span>` : ''}
+          ${w.grape ? w.grape.split(',').slice(0,2).map(g => `<span class="tag">${g.trim()}</span>`).join('') : ''}
+        </div>
+        <div class="wine-meta">
+          <span class="bottles-badge">🍾 ${w.bottles} fl</span>
+          ${ds ? `<span class="drink-window ${ds.cls}">${ds.label}</span>` : ''}
+          ${stars ? `<span style="color:var(--gold);font-size:0.7rem;letter-spacing:0.05em">${stars}</span>` : ''}
+        </div>
+      </div>
+      ${w.food ? `<div class="wine-card-footer" style="font-size:0.7rem;color:var(--text-muted)">🍽 ${w.food.split(',').slice(0,3).map(f=>f.trim()).join(' · ')}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ─── FILTER ───────────────────────────────────────────────────
+function normalizeColor(c) {
+  if (!c) return '';
+  const m = {'red':'Rött','white':'Vitt','rose':'Rosé','rosé':'Rosé','sparkling':'Mousserande','dessert':'Dessertvin','fortified':'Starkvin'};
+  return m[c.toLowerCase()] || c;
+}
+
+function filterWines() {
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  const color = document.getElementById('filter-color').value;
+  const drink = document.getElementById('filter-drink').value;
+  const region = document.getElementById('filter-region').value;
+  const grape = document.getElementById('filter-grape').value;
+
+  const filtered = wines.filter(w => {
+    if (q) {
+      const text = [w.name, w.producer, w.grape, w.region, w.country, w.notes, w.food, w.vintage].filter(Boolean).join(' ').toLowerCase();
+      if (!text.includes(q)) return false;
+    }
+    if (color) {
+      const wColor = normalizeColor(w.color);
+      if (wColor !== color) return false;
+    }
+    if (region && w.region !== region) return false;
+    if (grape) {
+      const wGrape = (w.grape || '').toLowerCase();
+      if (!wGrape.includes(grape.toLowerCase())) return false;
+    }
+    if (drink) {
+      const key = getDrinkStatusKey(w);
+      if (key !== drink) return false;
+    }
+    return true;
+  });
+
+  // Sorting
+  const sort = document.getElementById('sort-select').value;
+  if (sort) {
+    filtered.sort((a, b) => {
+      switch(sort) {
+        case 'name':        return (a.name||'').localeCompare(b.name||'', 'sv');
+        case 'name_desc':   return (b.name||'').localeCompare(a.name||'', 'sv');
+        case 'vintage':     return (a.vintage||9999) - (b.vintage||9999);
+        case 'vintage_desc':return (b.vintage||0) - (a.vintage||0);
+        case 'producer':    return (a.producer||'').localeCompare(b.producer||'', 'sv');
+        case 'region':      return (a.region||'').localeCompare(b.region||'', 'sv');
+        case 'country':     return (a.country||'').localeCompare(b.country||'', 'sv');
+        case 'color':       return (a.color||'').localeCompare(b.color||'', 'sv');
+        case 'drink_from':  return (a.drinkFrom||9999) - (b.drinkFrom||9999);
+        case 'drink_to':    return (a.drinkTo||9999) - (b.drinkTo||9999);
+        case 'price':       return (a.price||0) - (b.price||0);
+        case 'price_desc':  return (b.price||0) - (a.price||0);
+        case 'rating_desc': return (b.rating||0) - (a.rating||0);
+        default: return 0;
+      }
+    });
+  }
+
+  renderWines(filtered);
+}
+
+function updateFilterOptions() {
+  const regions = [...new Set(wines.map(w => w.region).filter(Boolean))].sort();
+  const grapes = [...new Set(wines.flatMap(w => (w.grape || '').split(',').map(g => g.trim())).filter(Boolean))].sort();
+
+  const rSel = document.getElementById('filter-region');
+  const gSel = document.getElementById('filter-grape');
+  const curR = rSel.value, curG = gSel.value;
+
+  rSel.innerHTML = '<option value="">Alla regioner</option>' + regions.map(r => `<option value="${r}">${r}</option>`).join('');
+  gSel.innerHTML = '<option value="">Alla druvor</option>' + grapes.map(g => `<option value="${g}">${g}</option>`).join('');
+
+  rSel.value = regions.includes(curR) ? curR : '';
+  gSel.value = grapes.includes(curG) ? curG : '';
+}
+
+// ─── STATS ────────────────────────────────────────────────────
+function updateStats() {
+  const total = wines.reduce((s, w) => s + (w.bottles || 1), 0);
+  const red = wines.filter(w => w.color === 'Rött').reduce((s, w) => s + (w.bottles || 1), 0);
+  const white = wines.filter(w => w.color === 'Vitt').reduce((s, w) => s + (w.bottles || 1), 0);
+  const drinkNow = wines.filter(w => getDrinkStatusKey(w) === 'now').reduce((s, w) => s + (w.bottles || 1), 0);
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-red').textContent = red;
+  document.getElementById('stat-white').textContent = white;
+  document.getElementById('stat-drink-now').textContent = drinkNow;
+}
+
+// ─── DETAIL MODAL ──────────────────────────────────────────────
+function openDetail(id) {
+  const w = wines.find(w => w.id === id);
+  if (!w) return;
+  currentDetailId = id;
+  document.getElementById('modal-title').textContent = w.name;
+
+  const ds = getDrinkStatus(w);
+  const stars = w.rating ? '★'.repeat(w.rating) + '☆'.repeat(5 - w.rating) : '';
+  const foodList = w.food ? w.food.split(',').map(f => f.trim()).filter(Boolean) : [];
+
+  document.getElementById('modal-body').innerHTML = `
+    <div class="detail-top">
+      <div class="detail-color-bar" style="background:${colorHex(w.color)}"></div>
+      <div class="detail-main">
+        <div class="detail-wine-name">${w.name}</div>
+        <div class="detail-producer">${[w.producer, w.vintage].filter(Boolean).join(' · ') || ''}</div>
+        ${stars ? `<div style="color:var(--gold);font-size:1rem;margin-bottom:0.8rem">${stars}</div>` : ''}
+        <div class="detail-grid">
+          ${w.color ? `<div class="detail-item"><label>Vintyp</label><span>${w.color}</span></div>` : ''}
+          ${w.grape ? `<div class="detail-item"><label>Druva</label><span>${w.grape}</span></div>` : ''}
+          ${w.region ? `<div class="detail-item"><label>Region</label><span>${w.region}</span></div>` : ''}
+          ${w.country ? `<div class="detail-item"><label>Land</label><span>${w.country}</span></div>` : ''}
+          <div class="detail-item"><label>Antal flaskor</label><span>${w.bottles} st</span></div>
+          ${w.price ? `<div class="detail-item"><label>Pris</label><span>${w.price} kr</span></div>` : ''}
+          ${w.drinkFrom || w.drinkTo ? `<div class="detail-item"><label>Drickfönster</label><span>${w.drinkFrom || '?'}–${w.drinkTo || '?'}</span></div>` : ''}
+          ${ds ? `<div class="detail-item"><label>Status</label><span class="drink-window ${ds.cls}">${ds.label}</span></div>` : ''}
+        </div>
+        ${w.notes ? `<div class="detail-notes">${w.notes}</div>` : ''}
+        ${foodList.length > 0 ? `<div class="detail-food"><h4>Passar till</h4><div class="food-tags">${foodList.map(f => `<span class="food-tag">${f}</span>`).join('')}</div></div>` : ''}
+        <div style="margin-top:1rem">
+          <button class="btn btn-sm btn-secondary" onclick="drinkBottle('${id}')">🍷 Markera en flaska som drucken</button>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('modal-delete-btn').onclick = () => deleteWine(id);
+  document.getElementById('modal-edit-btn').onclick = () => editWine(id);
+  document.getElementById('modal-detail').classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// ─── AI MATMATCHNING ──────────────────────────────────────────
+async function getPairing() {
+  const food = document.getElementById('food-input').value.trim();
+  if (!food) { showToast('Beskriv rätten först'); return; }
+  if (wines.length === 0) { showToast('Lägg till viner i källaren först'); return; }
+
+  const apiKey = localStorage.getItem('claude_api_key') || document.getElementById('api-key-input').value.trim();
+  if (!apiKey) {
+    document.getElementById('api-key-banner').style.display = 'flex';
+    showToast('Ange din Claude API-nyckel');
+    return;
+  }
+
+  const resultsDiv = document.getElementById('pairing-results');
+  resultsDiv.innerHTML = `<div class="loading"><div class="spinner"></div> Analyserar din källare och hittar bästa matchningar…</div>`;
+
+  const wineList = wines.map((w, i) => `${i+1}. ${[w.name, w.producer, w.vintage, w.color, w.grape, w.region, w.country, w.food ? 'Mat: '+w.food : ''].filter(Boolean).join(', ')} (${w.bottles} fl, ${getDrinkStatus(w)?.label || 'okänt drickfönster'})`).join('\n');
+
+  const prompt = `Du är en sommelier. Användaren ska äta: "${food}"
+
+Här är hans vinkällare:
+${wineList}
+
+Välj de 3 BÄSTA vinerna ur källaren som passar till denna rätt. Tänk på druva, region, stil och drickfönster.
+Svara ENBART med giltig JSON i detta format (inga andra ord):
+[
+  {"rank": 1, "index": <1-baserat index ur listan>, "score": <60-100>, "reason": "<en mening på svenska varför detta vin passar>"},
+  {"rank": 2, "index": <...>, "score": <...>, "reason": "<...>"},
+  {"rank": 3, "index": <...>, "score": <...>, "reason": "<...>"}
+]`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 600,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    if (!data.content) throw new Error(data.error?.message || 'API-fel');
+
+    const text = data.content[0].text;
+    const jsonMatch = text.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) throw new Error('Kunde inte tolka svar');
+
+    const recommendations = JSON.parse(jsonMatch[0]);
+
+    resultsDiv.innerHTML = `<div class="pairing-result-title">Bästa viner till "${food}"</div>` +
+      recommendations.map(r => {
+        const w = wines[r.index - 1];
+        if (!w) return '';
+        const ds = getDrinkStatus(w);
+        return `<div class="pairing-card">
+          <div class="pairing-rank">${r.rank}</div>
+          <div class="pairing-info">
+            <div class="pairing-wine-name">${w.name}${w.vintage ? ' <span style="color:var(--text-muted);font-size:0.9rem">'+w.vintage+'</span>' : ''}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.4rem">${[w.producer, w.color, w.region].filter(Boolean).join(' · ')}</div>
+            <div class="pairing-reason">${r.reason}</div>
+            ${ds ? `<div style="margin-top:0.5rem"><span class="drink-window ${ds.cls}">${ds.label}</span> &nbsp; <span style="font-size:0.7rem;color:var(--text-muted)">🍾 ${w.bottles} fl kvar</span></div>` : ''}
+          </div>
+          <div class="pairing-score">
+            <div class="score-circle">${r.score}</div>
+            <div class="score-label">Match</div>
+          </div>
+        </div>`;
+      }).join('');
+
+  } catch(e) {
+    resultsDiv.innerHTML = `<div style="color:#c0392b;padding:1rem;background:#fce4ec;border-radius:8px;font-size:0.85rem">Fel: ${e.message}</div>`;
+  }
+}
+
+// ─── IMPORT ───────────────────────────────────────────────────
+function parseCSVText(text) {
+  text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const rows = [];
+  let row = [], cell = '', quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (quoted) {
+      if (c === '"' && text[i+1] === '"') { cell += '"'; i++; }
+      else if (c === '"') { quoted = false; }
+      else { cell += c; }
+    } else {
+      if (c === '"') { quoted = true; }
+      else if (c === ',' || c === ';' || c === '\t') { row.push(cell.trim()); cell = ''; }
+      else if (c === '\n') {
+        row.push(cell.trim()); cell = '';
+        if (row.some(r => r !== '')) rows.push([...row]);
+        row = [];
+      } else { cell += c; }
+    }
+  }
+  if (cell || row.length) { row.push(cell.trim()); if (row.some(r => r !== '')) rows.push(row); }
+  if (rows.length === 0) return [];
+  const headers = rows[0].map(h => h.toLowerCase()
+    .replace(/å/g,'a').replace(/ä/g,'a').replace(/ö/g,'o')
+    .replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,''));
+  return rows.slice(1).map(r => {
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = (r[i] || '').replace(/^"|"$/g, ''); });
+    return obj;
+  });
+}
+
+function importFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const statusDiv = document.getElementById('import-status');
+  statusDiv.innerHTML = '<div class="loading"><div class="spinner"></div> Läser fil…</div>';
+  const reader = new FileReader();
+  reader.onload = (e) => processImportRows(parseCSVText(e.target.result), statusDiv);
+  reader.onerror = () => { statusDiv.innerHTML = '<div style="background:#fce4ec;border:1px solid #ef5350;border-radius:8px;padding:1rem;color:#c62828;font-size:0.82rem">Kunde inte läsa filen.</div>'; };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function processImportRows(rows, statusDiv) {
+  if (rows.length === 0) {
+    statusDiv.innerHTML = '<div style="background:#fce4ec;border:1px solid #ef5350;border-radius:8px;padding:1rem;color:#c62828;font-size:0.82rem">Inga rader hittades. Kontrollera att filen är CSV med rubriker på första raden.</div>';
+    return;
+  }
+  const foundCols = Object.keys(rows[0]).join(', ');
+  const colMap = {
+    name: ['wine','namn','name','vin','titel','title','vinets_namn'],
+    producer: ['producer','producent','tillverkare'],
+    vintage: ['vintage','argang','year','ar'],
+    color: ['type','color','colour','vintyp','typ','farg'],
+    region: ['region','subregion','appellation','omrade'],
+    country: ['country','land'],
+    grape: ['varietal','mastervarietal','druva','grape','druvor','grapes'],
+    bottles: ['quantity','totalquantity','flaskor','bottles','antal','qty'],
+    drinkFrom: ['beginconsume','drick_fran','drick_from','drink_from','fran','from'],
+    drinkTo: ['endconsume','drick_till','drick_to','drink_to','till','to','senast'],
+    price: ['price','value','pris','kostnad','cost','inkopspris'],
+    food: ['mat','food','matmatchning','pairing'],
+    notes: ['notes','anteckningar','kommentar','comment','designation']
+  };
+  function getVal(row, field) {
+    const keys = colMap[field] || [];
+    const rowKeys = Object.keys(row);
+    for (const k of keys) { if (row[k] !== undefined && row[k] !== '') return row[k]; }
+    for (const k of keys) { const m = rowKeys.find(rk => rk.includes(k) || k.includes(rk)); if (m && row[m]) return row[m]; }
+    return '';
+  }
+  let imported = 0;
+  rows.forEach(row => {
+    const name = getVal(row, 'name');
+    if (!name) return;
+    wines.push({
+      id: generateId(), name,
+      producer: getVal(row, 'producer'),
+      vintage: parseInt(getVal(row, 'vintage')) || null,
+      color: normalizeColor(getVal(row, 'color')) || 'Rött',
+      region: getVal(row, 'region'),
+      country: getVal(row, 'country'),
+      grape: getVal(row, 'grape'),
+      bottles: parseInt(getVal(row, 'bottles')) || 1,
+      drinkFrom: (v => v && v !== '9999' ? parseInt(v) : null)(getVal(row, 'drinkFrom')),
+      drinkTo: (v => v && v !== '9999' ? parseInt(v) : null)(getVal(row, 'drinkTo')),
+      price: parseInt(getVal(row, 'price')) || null,
+      food: getVal(row, 'food'),
+      notes: getVal(row, 'notes'),
+      rating: 0,
+      addedAt: new Date().toISOString()
+    });
+    imported++;
+  });
+  saveWines(); renderWines(); updateStats(); updateFilterOptions();
+  if (imported === 0) {
+    statusDiv.innerHTML = '<div style="background:#fff8e1;border:1px solid #f9a825;border-radius:8px;padding:1rem;color:#5d4037;font-size:0.82rem">Inga viner importerades. Hittade kolumner: <strong>' + foundCols + '</strong><br>Ladda ned mallen och jämför rubrikerna.</div>';
+  } else {
+    const noWindow = wines.filter(w => !w.drinkFrom && !w.drinkTo).length;
+    statusDiv.innerHTML = `<div style="background:#e8f5e9;border:1px solid #66bb6a;border-radius:8px;padding:1rem;color:#2e7d32;font-size:0.85rem">
+      ✓ ${imported} viner importerade!
+      <div style="margin-top:0.75rem;display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <button class="btn btn-sm btn-primary" onclick="showPage('cellar')">Visa källaren</button>
+        ${noWindow > 0 ? `<button class="btn btn-sm btn-gold" onclick="enrichAllDrinkWindows()">✦ AI-berika drickfönster (${noWindow} viner saknar data)</button>` : ''}
+      </div>
+    </div>`;
+  }
+}
+
+// ─── AI DRICKFÖNSTER ──────────────────────────────────────────
+async function getApiKey() {
+  return localStorage.getItem('claude_api_key') || '';
+}
+
+async function fetchDrinkWindow(wineList) {
+  const apiKey = await getApiKey();
+  if (!apiKey) { showToast('Ange Claude API-nyckel under Matmatchning'); return null; }
+
+  const prompt = `Du är en sommelier. Nedan är en lista med viner. För varje vin, ange ett realistiskt drickfönster baserat på druva, region, producent och årgång.
+Svara ENBART med giltig JSON-array utan förklaringar eller markdown:
+[{"index":1,"from":2024,"to":2030}, ...]
+
+Viner:
+${wineList.map((w,i) => `${i+1}. ${[w.name, w.producer, w.vintage, w.grape, w.region, w.country].filter(Boolean).join(', ')}`).join('\n')}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    if (!data.content) throw new Error(data.error?.message || 'API-fel');
+    const text = data.content[0].text;
+    const match = text.match(/\[[\s\S]*\]/);
+    if (!match) throw new Error('Kunde inte tolka svar');
+    return JSON.parse(match[0]);
+  } catch(e) {
+    showToast('AI-fel: ' + e.message);
+    return null;
+  }
+}
+
+async function enrichAllDrinkWindows() {
+  const toEnrich = wines.filter(w => !w.drinkFrom && !w.drinkTo);
+  if (toEnrich.length === 0) { showToast('Alla viner har redan drickfönster'); return; }
+
+  const apiKey = await getApiKey();
+  if (!apiKey) {
+    showPage('pairing');
+    showToast('Ange din API-nyckel under Matmatchning först');
+    return;
+  }
+
+  const statusDiv = document.getElementById('import-status');
+  const batchSize = 20;
+  let done = 0;
+
+  statusDiv.innerHTML = `<div class="loading"><div class="spinner"></div> AI fyller i drickfönster för ${toEnrich.length} viner…</div>`;
+
+  for (let i = 0; i < toEnrich.length; i += batchSize) {
+    const batch = toEnrich.slice(i, i + batchSize);
+    const results = await fetchDrinkWindow(batch);
+    if (!results) break;
+
+    results.forEach(r => {
+      const wine = batch[r.index - 1];
+      if (!wine) return;
+      const idx = wines.findIndex(w => w.id === wine.id);
+      if (idx !== -1) {
+        wines[idx].drinkFrom = r.from || null;
+        wines[idx].drinkTo = r.to || null;
+        wines[idx].drinkWindowAI = true;
+      }
+    });
+    done += batch.length;
+    statusDiv.innerHTML = `<div class="loading"><div class="spinner"></div> Behandlar… ${done}/${toEnrich.length} viner klara</div>`;
+  }
+
+  saveWines();
+  renderWines();
+  updateStats();
+  statusDiv.innerHTML = `<div style="background:#e8f5e9;border:1px solid #66bb6a;border-radius:8px;padding:1rem;color:#2e7d32;font-size:0.85rem">
+    ✓ Drickfönster tillagda för ${done} viner! <button class="btn btn-sm btn-primary" onclick="showPage('cellar')" style="margin-left:0.75rem">Visa källaren</button>
+  </div>`;
+  showToast('✓ AI-berikade drickfönster klara!');
+}
+
+async function enrichSingleWine() {
+  const id = currentDetailId;
+  const w = wines.find(w => w.id === id);
+  if (!w) return;
+
+  const btn = document.getElementById('modal-ai-btn');
+  btn.textContent = '…';
+  btn.disabled = true;
+
+  const results = await fetchDrinkWindow([w]);
+  if (results && results[0]) {
+    const idx = wines.findIndex(w => w.id === id);
+    wines[idx].drinkFrom = results[0].from || null;
+    wines[idx].drinkTo = results[0].to || null;
+    wines[idx].drinkWindowAI = true;
+    saveWines();
+    renderWines();
+    updateStats();
+    closeModal('modal-detail');
+    openDetail(id);
+    showToast(`✓ Drickfönster: ${results[0].from}–${results[0].to}`);
+  }
+
+  btn.textContent = '✦ AI-förslag drickfönster';
+  btn.disabled = false;
+}
+
+// ─── EXPORT / IMPORT JSON ─────────────────────────────────────
+function exportJSON() {
+  const data = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    wines: wines
+  };
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const date = new Date().toISOString().slice(0,10);
+  a.download = 'vinkallare_' + date + '.json';
+  a.click();
+  showToast('✓ Källare exporterad – spara filen i OneDrive/iCloud');
+}
+
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const imported = data.wines || data;
+      if (!Array.isArray(imported)) throw new Error('Ogiltigt format');
+
+      const existing = wines.length;
+      if (existing > 0) {
+        if (!confirm('Du har ' + existing + ' viner i källaren. Vill du ersätta dem med den importerade filen?')) {
+          event.target.value = '';
+          return;
+        }
+      }
+
+      wines = imported;
+      saveWines();
+      renderWines();
+      updateStats();
+      updateFilterOptions();
+      showToast('✓ ' + wines.length + ' viner inlästa från fil');
+      showPage('cellar');
+    } catch(err) {
+      showToast('Fel: ' + err.message);
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+// ─── ETIKETT-SCANNING ─────────────────────────────────────────
+async function scanLabel(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const apiKey = localStorage.getItem('claude_api_key') || '';
+  if (!apiKey) {
+    showToast('Ange Claude API-nyckel under Matmatchning först');
+    event.target.value = '';
+    return;
+  }
+
+  const status = document.getElementById('scan-status');
+  const preview = document.getElementById('scan-preview');
+  const img = document.getElementById('scan-img');
+
+  status.style.display = 'block';
+  status.textContent = '⟳ Analyserar etikett…';
+  status.style.color = 'var(--text-muted)';
+
+  // Show preview
+  const previewUrl = URL.createObjectURL(file);
+  img.src = previewUrl;
+  preview.style.display = 'block';
+
+  // Convert to base64
+  const base64 = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+  const mediaType = file.type || 'image/jpeg';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 500,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: { type: 'base64', media_type: mediaType, data: base64 }
+            },
+            {
+              type: 'text',
+              text: `Analysera denna vinetikett och extrahera all information du kan se.
+Svara ENBART med giltig JSON utan förklaringar:
+{
+  "name": "vinets namn",
+  "producer": "producent/château",
+  "vintage": 2018,
+  "color": "Rött eller Vitt eller Rosé eller Mousserande eller Dessertvin eller Starkvin",
+  "region": "region",
+  "country": "land",
+  "grape": "druva/druvor",
+  "appellation": "appellation om synlig"
+}
+Om du inte kan läsa ett fält, lämna det som null.`
+            }
+          ]
+        }]
+      })
+    });
+
+    const data = await res.json();
+    if (!data.content) throw new Error(data.error?.message || 'API-fel');
+
+    const text = data.content[0].text;
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Kunde inte tolka svar');
+
+    const wine = JSON.parse(match[0]);
+
+    // Fill in form fields
+    if (wine.name) document.getElementById('f-name').value = wine.name;
+    if (wine.producer) document.getElementById('f-producer').value = wine.producer;
+    if (wine.vintage) document.getElementById('f-vintage').value = wine.vintage;
+    if (wine.color) document.getElementById('f-color').value = wine.color;
+    if (wine.region) document.getElementById('f-region').value = wine.region;
+    if (wine.country) document.getElementById('f-country').value = wine.country;
+    if (wine.grape) document.getElementById('f-grape').value = wine.grape;
+
+    status.textContent = '✓ Etikett analyserad – kontrollera och justera om något är fel';
+    status.style.color = '#2e7d32';
+    showToast('✓ Etikett inläst!');
+
+  } catch(e) {
+    status.textContent = '✗ Fel: ' + e.message;
+    status.style.color = '#c0392b';
+  }
+
+  event.target.value = '';
+}
+
+function downloadTemplate() {
+  const headers = ['namn','producent','årgång','vintyp','region','land','druva','flaskor','drick_från','drick_till','pris','mat','anteckningar'];
+  const example = ['Château Margaux','Château Margaux','2018','Rött','Bordeaux','Frankrike','Cabernet Sauvignon, Merlot','2','2025','2040','1200','lamm, vilt, hårdost','Utmärkt årgång'];
+  const csv = [headers.join(','), example.join(',')].join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'vinkallare_mall.csv';
+  a.click();
+}
+
+// ─── TOAST ────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ─── START ────────────────────────────────────────────────────
+window.addEventListener('click', (e) => {
+  if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open');
+});
+
+init();
+</script>
+</body>
+</html>
