@@ -1134,7 +1134,7 @@ async function testApiKey() {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 20, messages: [{ role: 'user', content: 'Svara bara: OK' }] })
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 20, messages: [{ role: 'user', content: 'Svara bara: OK' }] })
     });
     const d = await r.json();
     if (d.content) {
@@ -1231,7 +1231,7 @@ async function autoFetchDrinkWindow(id) {
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 100,
         messages: [{
           role: 'user',
@@ -1586,7 +1586,7 @@ Svara ENBART med giltig JSON i detta format (inga andra ord):
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 600,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -1762,7 +1762,7 @@ ${wineList.map((w,i) => `${i+1}. ${[w.name, w.producer, w.vintage, w.grape, w.re
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 2000,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -1947,7 +1947,7 @@ async function scanLabel(event) {
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 500,
         messages: [{
           role: 'user',
@@ -2052,7 +2052,7 @@ async function enrichAllAuto() {
           'anthropic-dangerous-direct-browser-access': 'true'
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
+          model: 'claude-sonnet-4-6',
           max_tokens: 1500,
           messages: [{ role: 'user', content: `Du ar en erfaren sommelier med tillgang till betyg fran Wine Spectator, Wine Enthusiast, Robert Parker/Wine Advocate, Jancis Robinson, Guia Penin och andra ledande kritiker.
 
